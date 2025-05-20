@@ -25,7 +25,7 @@ Pour ce projet, j'ai choisi AWS comme fournisseur d'infrastructure cloud pour le
 
 Configuration spécifique:
 
-- Instance EC2 t2.micro avec Ubuntu 20.04 LTS
+- Instance EC2 t2.micro avec Ubuntu 22.04 LTS
 - Groupe de sécurité autorisant le trafic SSH (port 22) et API (port 3000)
 - Provisionnement complet via Terraform
 
