@@ -100,10 +100,11 @@ jobs:
       - name: Wait for instance to be ready
         run: sleep 30
 
-      - name: Add EC2 host to known_hosts
+      - name: Add EC2 hosts to known_hosts
         run: |
           ssh-keyscan -H 13.39.51.64 >> ~/.ssh/known_hosts
           ssh-keyscan -H 51.44.13.45 >> ~/.ssh/known_hosts
+          ssh-keyscan -H 35.180.205.56 >> ~/.ssh/known_hosts
 
       - name: Execute release script
         run: |
