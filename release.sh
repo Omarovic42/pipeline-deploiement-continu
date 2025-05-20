@@ -56,8 +56,8 @@ echo -e "${GREEN}Changelog generated${NC}"
 echo 
 echo -e "${YELLOW}Step 5: Deploying with Ansible...${NC}"
 # Utilisation des variables d'environnement ou extraction depuis le repo si non définies
-if [ -z "${GITHUB_USERNAME}" ]; then
-  export GITHUB_USERNAME=$(git config --get remote.origin.url | sed -n 's/.*github.com[\/:]\([^\/]*\).*/\1/p')
+if [ -z "${USERNAME}" ]; then
+  export USERNAME=$(git config --get remote.origin.url | sed -n 's/.*github.com[\/:]\([^\/]*\).*/\1/p')
 fi
 if [ -z "${REPO_NAME}" ]; then
   export REPO_NAME=$(basename -s .git $(git config --get remote.origin.url))
