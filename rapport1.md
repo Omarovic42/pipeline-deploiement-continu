@@ -126,23 +126,25 @@ Le pipeline CI/CD est configuré avec GitHub Actions et se déclenche automatiqu
 
 ## Captures d'écran / Logs
 
-### Exemple d’outputs Terraform
+### Outputs Terraform
 
 ```
 Outputs:
-instance_id = "i-0123456789abcdef0"
-instance_ip = "54.123.456.789"
-security_group_id = "sg-0123456789abcdef0"
+instance_id = "i-0e5a7358f14f5e74d"
+instance_ip = "13.38.128.207"
+security_group_id = "sg-033ac64c7b0006830"
 ```
 
-### Exemple de PLAY RECAP Ansible
+### Résultat du PLAY RECAP Ansible
 
 ```
 PLAY RECAP *********************************************************************
-54.123.456.789             : ok=12   changed=10    unreachable=0    failed=0    skipped=0
+13.38.128.207              : ok=0    changed=0    unreachable=1    failed=0    skipped=0    rescued=0    ignored=0   
+
+Error: Process completed with exit code 4.
 ```
 
-### Exemple de log de release GitHub Actions
+### Log de la tentative de release GitHub Actions
 
 ```
 Run ./release.sh
@@ -150,17 +152,16 @@ Starting release process...
 Step 1: Building the application...
 Build completed (no build step required for Node.js)
 Step 2: Creating a new version tag...
-Created and pushed tag: v2023.05.15
-Step 3: Generating changelog...
+Created and pushed tag: v2025.05.20
+Step 3: Setting up standard-version...
+Added 190 packages, and audited 191 packages in 3s
+Step 4: Generating changelog...
 Changelog generated
-Step 4: Deploying with Ansible...
-Deployment completed successfully!
-Release process completed successfully!
+Step 5: Deploying with Ansible...
+fatal: [13.38.128.207]: UNREACHABLE! => {"changed": false, "msg": "Failed to connect to the host via ssh: ubuntu@13.38.128.207: Permission denied (publickey).", "unreachable": true}
 ```
 
 ---
-
-*Ajoute ici d'autres logs ou captures réelles si besoin (par exemple, capture d'écran de la console AWS ou des dashboards GitHub Actions).*
 
 ## Conclusion
 
@@ -172,5 +173,3 @@ Les points forts :
 - Possibilité de faire évoluer facilement l’infra, le code et le pipeline
 
 ---
-
-*Document mis à jour pour correspondre à la configuration réelle du projet (mai 2025).*
