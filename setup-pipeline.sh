@@ -1,6 +1,6 @@
 #!/bin/bash
 
-# Variables à personnaliser
+# Variables
 GITHUB_USERNAME="Omarovic42"
 REPO_NAME="pipeline-deploiement-continu"
 
