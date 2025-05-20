@@ -8,32 +8,32 @@ on:
 jobs:
   deploy:
     runs-on: ubuntu-latest
-    
+
     steps:
       - name: Checkout repository
         uses: actions/checkout@v2
         with:
           fetch-depth: 0
-      
+
       - name: Set up Node.js
         uses: actions/setup-node@v2
         with:
           node-version: '16'
-      
+
       - name: Install dependencies
         run: npm install
         working-directory: ./api
-      
+
       - name: Install Terraform
         uses: hashicorp/setup-terraform@v1
         with:
           terraform_version: 1.0.0
-      
+
       - name: Install Ansible
         run: |
           sudo apt update
           sudo apt install -y ansible
-      
+
       - name: Set up SSH key
         run: |
           mkdir -p ~/.ssh
@@ -41,7 +41,8 @@ jobs:
           chmod 600 ~/.ssh/id_rsa
           ssh-keyscan -H github.com >> ~/.ssh/known_hosts
 
-      - name: Debug AWS credentials
+      - name: Debug AWS credentials before apply
+        working-directory: ./infra
         env:
           AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
           AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
@@ -50,7 +51,7 @@ jobs:
           if [ -z "$AWS_ACCESS_KEY_ID" ]; then echo "AWS_ACCESS_KEY_ID missing!"; exit 1; else echo "AWS_ACCESS_KEY_ID found"; fi
           if [ -z "$AWS_SECRET_ACCESS_KEY" ]; then echo "AWS_SECRET_ACCESS_KEY missing!"; exit 1; else echo "AWS_SECRET_ACCESS_KEY found"; fi
           if [ -z "$AWS_DEFAULT_REGION" ]; then echo "AWS_DEFAULT_REGION missing!"; exit 1; else echo "AWS_DEFAULT_REGION found"; fi
-      
+
       - name: Initialize Terraform
         working-directory: ./infra
         env:
@@ -58,7 +59,7 @@ jobs:
           AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           AWS_DEFAULT_REGION: ${{ secrets.AWS_DEFAULT_REGION }}
         run: terraform init
-      
+
       - name: Apply Terraform configuration
         working-directory: ./infra
         env:
@@ -66,12 +67,11 @@ jobs:
           AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           AWS_DEFAULT_REGION: ${{ secrets.AWS_DEFAULT_REGION }}
         run: |
-          terraform apply -auto-approve \
-            -var "ssh_public_key_path=$HOME/.ssh/id_rsa.pub"
-      
+          terraform apply -auto-approve -var "ssh_public_key_path=$HOME/.ssh/id_rsa.pub"
+
       - name: Wait for instance to be ready
         run: sleep 30
-      
+
       - name: Execute release script
         run: |
           chmod +x release.sh
