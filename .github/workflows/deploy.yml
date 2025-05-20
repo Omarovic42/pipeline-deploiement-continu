@@ -100,12 +100,9 @@ jobs:
       - name: Wait for instance to be ready
         run: sleep 30
 
-      - name: Add EC2 hosts to known_hosts
+      - name: Add all EC2 hosts from Ansible inventory to known_hosts
         run: |
-          ssh-keyscan -H 13.39.51.64 >> ~/.ssh/known_hosts
-          ssh-keyscan -H 51.44.13.45 >> ~/.ssh/known_hosts
-          ssh-keyscan -H 35.180.205.56 >> ~/.ssh/known_hosts
-          ssh-keyscan -H 35.180.138.70 >> ~/.ssh/known_hosts
+          grep -Eo '([0-9]{1,3}\.){3}[0-9]{1,3}' ansible/inventory.ini | sort | uniq | xargs -I{} ssh-keyscan -H {} >> ~/.ssh/known_hosts
 
       - name: Execute release script
         run: |
