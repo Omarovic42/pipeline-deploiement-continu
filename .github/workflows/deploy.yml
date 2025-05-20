@@ -34,12 +34,18 @@ jobs:
           sudo apt update
           sudo apt install -y ansible
 
-      - name: Set up SSH key
+      - name: Set up SSH key (private)
         run: |
           mkdir -p ~/.ssh
           echo "${{ secrets.SSH_PRIVATE_KEY }}" > ~/.ssh/id_rsa
           chmod 600 ~/.ssh/id_rsa
           ssh-keyscan -H github.com >> ~/.ssh/known_hosts
+
+      - name: Set up SSH public key for Terraform
+        run: |
+          mkdir -p ~/.ssh
+          echo "${{ secrets.DEPLOY_KEY_PUB }}" > ~/.ssh/id_rsa.pub
+          chmod 644 ~/.ssh/id_rsa.pub
 
       - name: Initialize Terraform
         working-directory: ./infra
