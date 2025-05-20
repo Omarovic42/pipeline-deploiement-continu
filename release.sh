@@ -1,5 +1,6 @@
 #!/usr/bin/env bash
 set -e
+set -x  # Affiche chaque commande exécutée pour le debug
 
 # Couleurs pour une meilleure lisibilité
 GREEN='\033[0;32m'
@@ -18,10 +19,27 @@ cd ..
 # 2. Versioning avec git tag
 echo 
 echo -e "${YELLOW}Step 2: Creating a new version tag...${NC}"
+
+# Config git pour GitHub Actions (nécessaire en CI/CD)
+git config --global user.email "github-actions[bot]@users.noreply.github.com"
+git config --global user.name "github-actions[bot]"
+
+# S'assurer que l'on est bien sur la bonne branche (et pas en detached HEAD)
+if [ -n "${GITHUB_REF_NAME}" ]; then
+  git checkout "${GITHUB_REF_NAME}" || git checkout main
+else
+  git checkout main
+fi
+
+# Créer le tag du jour si non existant
 VERSION="v$(date +'%Y.%m.%d')"
-git tag $VERSION
-git push --tags
-echo -e "${GREEN}Created and pushed tag: $VERSION${NC}"
+if git rev-parse "$VERSION" >/dev/null 2>&1; then
+  echo -e "${YELLOW}Tag $VERSION already exists, skipping tag creation.${NC}"
+else
+  git tag $VERSION
+  git push --tags
+  echo -e "${GREEN}Created and pushed tag: $VERSION${NC}"
+fi
 
 # 3. Installation de standard-version si nécessaire
 echo 
