@@ -3,14 +3,10 @@ provider "aws" {
 }
 
 # Création d'une paire de clés SSH
-#resource "aws_key_pair" "deployer" {
-#  key_name   = "deployer-key"
-#  public_key = file(var.ssh_public_key_path)
-
-#  lifecycle {
-#    prevent_destroy = true
-#  }
-#}
+resource "aws_key_pair" "deployer" {
+  key_name   = "deployer-key"
+  public_key = file(var.ssh_public_key_path)
+}
 
 # Création d'un groupe de sécurité
 resource "aws_security_group" "api_sg" {
