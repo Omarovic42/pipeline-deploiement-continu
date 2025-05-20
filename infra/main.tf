@@ -6,6 +6,10 @@ provider "aws" {
 resource "aws_key_pair" "deployer" {
   key_name   = "deployer-key"
   public_key = file(var.ssh_public_key_path)
+
+  lifecycle {
+    prevent_destroy = true
+  }
 }
 
 # Création d'un groupe de sécurité
@@ -53,20 +57,25 @@ resource "aws_instance" "api_server" {
     Name = "api-server"
   }
 
-  # Script d'initialisation de base
   user_data = <<-EOF
-              #!/bin/bash
-              apt-get update
-              apt-get install -y python3
-              EOF
+    #!/bin/bash
+    apt-get update -y
+    apt-get install -y python3
+  EOF
 }
 
 # Créer un fichier d'inventaire Ansible dynamique
 resource "local_file" "ansible_inventory" {
-  content = templatefile("${path.module}/inventory.tpl",
-    {
-      api_ip = aws_instance.api_server.public_ip
-    }
-  )
+  content = templatefile("${path.module}/inventory.tpl", {
+    api_ip = aws_instance.api_server.public_ip
+  })
   filename = "${path.module}/../ansible/inventory.ini"
+
+  depends_on = [aws_instance.api_server]
+}
+
+# Output pour l'adresse IP publique de l'instance
+output "api_server_public_ip" {
+  value = aws_instance.api_server.public_ip
+  description = "Adresse IP publique du serveur API"
 }
