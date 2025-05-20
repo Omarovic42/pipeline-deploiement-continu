@@ -66,6 +66,24 @@ jobs:
           if [ -z "$AWS_SECRET_ACCESS_KEY" ]; then echo "AWS_SECRET_ACCESS_KEY missing!"; exit 1; else echo "AWS_SECRET_ACCESS_KEY found"; fi
           if [ -z "$AWS_DEFAULT_REGION" ]; then echo "AWS_DEFAULT_REGION missing!"; exit 1; else echo "AWS_DEFAULT_REGION found"; fi
 
+      - name: Import AWS key pair (idempotent)
+        working-directory: ./infra
+        env:
+          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          AWS_DEFAULT_REGION: ${{ secrets.AWS_DEFAULT_REGION }}
+        run: |
+          terraform import aws_key_pair.deployer deployer-key || true
+
+      - name: Import AWS security group (idempotent)
+        working-directory: ./infra
+        env:
+          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          AWS_DEFAULT_REGION: ${{ secrets.AWS_DEFAULT_REGION }}
+        run: |
+          terraform import aws_security_group.api_sg sg-033ac64c7b0006830 || true
+
       - name: Apply Terraform configuration
         working-directory: ./infra
         env:
