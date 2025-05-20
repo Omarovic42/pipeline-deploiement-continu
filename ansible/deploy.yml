@@ -1,0 +1,90 @@
+---
+- name: Déploiement de l'API
+  hosts: api_servers
+  become: true
+  vars:
+    app_dir: "/opt/sensor-api"
+    repo_url: "https://github.com/Omarovic42/pipeline-deploiement-continu.git"
+    api_port: 3000
+    node_version: "16.x"
+
+  tasks:
+    - name: Mise à jour des paquets
+      apt:
+        update_cache: yes
+        upgrade: yes
+
+    - name: Installation des paquets requis
+      apt:
+        name:
+          - git
+          - curl
+          - build-essential
+        state: present
+
+    - name: Ajout du repository NodeJS
+      shell: |
+        curl -fsSL https://deb.nodesource.com/setup_{{ node_version }} | bash -
+      args:
+        warn: false
+
+    - name: Installation de NodeJS et npm
+      apt:
+        name: nodejs
+        state: present
+
+    - name: Installation de PM2 globalement
+      npm:
+        name: pm2
+        global: yes
+        state: present
+
+    - name: Création du répertoire d'application
+      file:
+        path: "{{ app_dir }}"
+        state: directory
+        owner: ubuntu
+        group: ubuntu
+        mode: '0755'
+
+    - name: Clonage/Mise à jour du dépôt Git
+      git:
+        repo: "{{ repo_url }}"
+        dest: "{{ app_dir }}"
+        version: main
+        force: yes
+      become_user: ubuntu
+
+    - name: Installation des dépendances NPM
+      npm:
+        path: "{{ app_dir }}/api"
+      become_user: ubuntu
+
+    - name: Vérification si l'application est déjà gérée par PM2
+      shell: pm2 list | grep sensor-api
+      register: pm2_check
+      ignore_errors: yes
+      become_user: ubuntu
+
+    - name: Démarrage de l'application avec PM2
+      shell: cd {{ app_dir }}/api && pm2 start index.js --name sensor-api
+      when: pm2_check.rc != 0
+      become_user: ubuntu
+
+    - name: Redémarrage de l'application si déjà existante
+      shell: cd {{ app_dir }}/api && pm2 restart sensor-api
+      when: pm2_check.rc == 0
+      become_user: ubuntu
+
+    - name: Sauvegarde de la configuration PM2
+      shell: pm2 save
+      become_user: ubuntu
+
+    - name: Configuration de PM2 pour démarrer au boot
+      shell: pm2 startup | tail -n 1
+      register: pm2_startup
+      become_user: ubuntu
+
+    - name: Exécution de la commande PM2 startup
+      shell: "{{ pm2_startup.stdout }}"
+      when: pm2_startup.stdout != ""

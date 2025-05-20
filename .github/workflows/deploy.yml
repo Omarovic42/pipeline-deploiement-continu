@@ -1,0 +1,63 @@
+name: Deploy API
+
+on:
+  push:
+    tags:
+      - 'v*'
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v2
+        with:
+          fetch-depth: 0
+      
+      - name: Set up Node.js
+        uses: actions/setup-node@v2
+        with:
+          node-version: '16'
+      
+      - name: Install dependencies
+        run: npm install
+        working-directory: ./api
+      
+      - name: Install Terraform
+        uses: hashicorp/setup-terraform@v1
+        with:
+          terraform_version: 1.0.0
+      
+      - name: Install Ansible
+        run: |
+          sudo apt update
+          sudo apt install -y ansible
+      
+      - name: Set up SSH key
+        run: |
+          mkdir -p ~/.ssh
+          echo "${{ secrets.SSH_PRIVATE_KEY }}" > ~/.ssh/id_rsa
+          chmod 600 ~/.ssh/id_rsa
+          ssh-keyscan -H github.com >> ~/.ssh/known_hosts
+      
+      - name: Initialize Terraform
+        working-directory: ./infra
+        run: terraform init
+      
+      - name: Apply Terraform configuration
+        working-directory: ./infra
+        run: |
+          terraform apply -auto-approve \
+            -var "ssh_public_key_path=$HOME/.ssh/id_rsa.pub"
+      
+      - name: Wait for instance to be ready
+        run: sleep 30
+      
+      - name: Execute release script
+        run: |
+          chmod +x release.sh
+          ./release.sh
+        env:
+          GITHUB_USERNAME: Omarovic42
+          REPO_NAME: pipeline-deploiement-continu
