@@ -41,6 +41,14 @@ jobs:
           chmod 600 ~/.ssh/id_rsa
           ssh-keyscan -H github.com >> ~/.ssh/known_hosts
 
+      - name: Initialize Terraform
+        working-directory: ./infra
+        env:
+          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          AWS_DEFAULT_REGION: ${{ secrets.AWS_DEFAULT_REGION }}
+        run: terraform init
+
       - name: Debug AWS credentials before apply
         working-directory: ./infra
         env:
@@ -51,14 +59,6 @@ jobs:
           if [ -z "$AWS_ACCESS_KEY_ID" ]; then echo "AWS_ACCESS_KEY_ID missing!"; exit 1; else echo "AWS_ACCESS_KEY_ID found"; fi
           if [ -z "$AWS_SECRET_ACCESS_KEY" ]; then echo "AWS_SECRET_ACCESS_KEY missing!"; exit 1; else echo "AWS_SECRET_ACCESS_KEY found"; fi
           if [ -z "$AWS_DEFAULT_REGION" ]; then echo "AWS_DEFAULT_REGION missing!"; exit 1; else echo "AWS_DEFAULT_REGION found"; fi
-
-      - name: Initialize Terraform
-        working-directory: ./infra
-        env:
-          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
-          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-          AWS_DEFAULT_REGION: ${{ secrets.AWS_DEFAULT_REGION }}
-        run: terraform init
 
       - name: Apply Terraform configuration
         working-directory: ./infra
